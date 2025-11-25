@@ -10,30 +10,37 @@ async function readAllTrainees(req, res) {
   }
 }
 
-// READ a specific trainee (by name and email)
+// Read a specific trainee
 async function readATrainee(req, res) {
   try {
     const { name = "", email = "" } = req.body ?? {};
     const query = {};
 
-     if (name) {
-      query.name = { $regex: name, $options: "i" };  // case-insensitive
+    if (name) {
+      query.name = { $regex: name, $options: "i" };
     }
 
     if (email) {
-      query.email = { $regex: email, $options: "i" }; // case-insensitive
+      query.email = { $regex: email, $options: "i" };
     }
 
-    // if (name) query.name = name;
-    // if (email) query.email = email;
+    // ⭐ Replace this line:
+    // const trainees = await TraineesModel.find(query);
 
-    const trainees = await TraineesModel.find(query);
+    // ⭐ With OR operator (minimal change):
+    const trainees = await TraineesModel.find({
+      $or: [
+        ...(query.name ? [{ name: query.name }] : []),
+        ...(query.email ? [{ email: query.email }] : [])
+      ]
+    });
 
-    res.json(trainees); // always return array
+    res.json(trainees);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 }
+
 
 // ADD a new trainee
 async function addATrainee(req, res) {
@@ -101,4 +108,5 @@ module.exports = {
   updateATrainee,
   deleteATrainee
 };
+
 
