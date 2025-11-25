@@ -13,14 +13,23 @@ async function readAllTrainees(req, res) {
 // READ a specific trainee (by name and email)
 async function readATrainee(req, res) {
   try {
-    const { name, email } = req.body;
-    const trainees = await TraineesModel.find({ name, email });
+    const { name = "", email = "" } = req.body ?? {};
+    const query = {};
 
-    if (trainees.length > 0) {
-      res.json(trainees);
-    } else {
-      res.json({ message: "No Trainees found!!!" });
+     if (name) {
+      query.name = { $regex: name, $options: "i" };  // case-insensitive
     }
+
+    if (email) {
+      query.email = { $regex: email, $options: "i" }; // case-insensitive
+    }
+
+    // if (name) query.name = name;
+    // if (email) query.email = email;
+
+    const trainees = await TraineesModel.find(query);
+
+    res.json(trainees); // always return array
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -92,3 +101,4 @@ module.exports = {
   updateATrainee,
   deleteATrainee
 };
+
